@@ -15,17 +15,16 @@ import (
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/events"
 	"github.com/disgoorg/disgo/httpserver"
-	"github.com/disgoorg/snowflake/v2"
 	"github.com/oasisprotocol/curve25519-voi/primitives/ed25519"
 )
 
 var (
-	token     string       = os.Getenv("disgo_token")
-	publicKey string       = os.Getenv("disgo_public_key")
-	guildID   snowflake.ID = snowflake.GetEnv("disgo_guild_id")
+	token     string = os.Getenv("disgo_token")
+	publicKey string = os.Getenv("disgo_public_key")
 )
 
 func main() {
+	slog.Info(token)
 	slog.Info("starting example...")
 	slog.Info("disgo version", slog.String("version", disgo.Version))
 
@@ -47,7 +46,7 @@ func main() {
 
 	defer client.Close(context.TODO())
 
-	if _, err = client.Rest().SetGuildCommands(client.ApplicationID(), guildID, commands.Commands); err != nil {
+	if _, err = client.Rest().SetGlobalCommands(client.ApplicationID(), commands.Commands); err != nil {
 		panic("error while registering commands: " + err.Error())
 	}
 
@@ -56,6 +55,10 @@ func main() {
 	}
 
 	slog.Info("example is now running. Press CTRL-C to exit.")
+	keepAlive()
+}
+
+func keepAlive() {
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-s
